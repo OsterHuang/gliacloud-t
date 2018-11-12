@@ -1,0 +1,68 @@
+------- Entity -------
+drinkItem: {
+  name: String,
+  price: Number,
+  pic: String(url)
+}
+
+menu: [type is drinkItem]
+
+drink: {
+  name: String,
+  qty: Number,
+  size: String('S', 'M', 'L'),
+  price: Number,
+  comment: String
+}
+
+order: {
+  orderId: string (need only request to update),
+  list: [type is drink],
+  totalPrice: Number,
+  status: string (only for query)
+}
+
+------- Spec -------
+http Header: with token (signIn token)
+response 400 -> Usually validation error
+
+/** åå¾å¯é»çé£²æèå® **/
+path: /api/order/menu
+  method: get
+  response: a type of menu
+
+/** æ¥è©¢å®ä¸è¨å® **/
+path: /api/order/:orderId
+  method: get
+  security: signedIn
+  response: a type of order; no data will be empty body {}
+  error: 401(not signedIn), 400(bad request),
+
+/** åå¾è©²äººææè¨éçè¨å® **/
+path: /api/order/
+  method: get
+  security: signedIn
+  response: a type of list of order; no data will be empty list {list: []}
+  error: 401(not signedIn), 400(bad request),
+
+/** ä¸è¨å® **/
+path: /api/order/create
+  method: put
+  security: signedIn
+  response: {orderId: string}
+
+/** åæ¶è¨å® **/
+path: /api/order/delete
+  method: delete
+  security: signedIn(admin)
+  request: {orderId: string}
+  response: {orderId: string, message: errorMsg} --> æååå³ orderId; fail will have errorMsg(ex: Order Status is completed)
+  error: 401(not signedIn, not admin, creator), 400(bad request),
+
+/** ä¿®æ¹è¨å® **/
+path: /api/order/update
+  method: post
+  security: signedIn (Must be the person who created this order)
+  request: {...a type of order, orderId: string}
+  response: {orderId: string, message: errorMsg} --> æååå³ orderId; fail will have errorMsg(ex: Order Status is not new)
+  error: 401(not signedIn, not creator), 400(bad request),
